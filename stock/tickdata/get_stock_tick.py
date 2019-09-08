@@ -62,7 +62,7 @@ def get_tick_data(code, date_b, date_e=None):
         return get_tick_data_by_range(code, date_b, date_e)
 
 if __name__== '__main__':
-    print(get_tick_data('600848', '2019-09-01'))
-    print(get_tick_data('600848', '2019-09-01', '2019-09-10'))
-    print(get_tick_data_by_date('600848', '2019-09-01'))
-    print(get_tick_data_by_range('600848', '2019-09-01', '2019-09-10'))
+    #print(get_tick_data('600848', '2019-09-01'))
+    print(get_tick_data('000004', '2019-09-01', '2019-09-10'))
+    #print(get_tick_data_by_date('600848', '2019-09-01'))
+    #print(get_tick_data_by_range('600848', '2019-09-01', '2019-09-10'))
