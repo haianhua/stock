@@ -1,6 +1,7 @@
 import tushare as ts
 import re
 import datetime
+
 def get_tick_data_by_date(code, date):
     '''
     parameters
