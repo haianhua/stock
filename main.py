@@ -13,15 +13,15 @@ def get_path(date, code):
     return save_dir+date+'.'+code+'.csv'
 
 def save_all_stock_tick_init(pro):
-    codes=sk.get_codes(pro)
-    for i in range(len(codes)):
-        symbol=re.findall(r"\d+",codes[i])[0]
+    tscodes=sk.get_tscodes(pro)
+    for i in range(len(tscodes)):
+        symbol=re.findall(r"\d+",tscodes[i])[0]
         ticks=sk.get_tick_data(symbol, '2019-02-01', '2019-09-09')
         print(ticks, type(ticks))
         for date in ticks: 
             if ticks[date] is not None:
                 print(date)
-                ticks[date].to_csv(codes[i]+'.csv')
+                ticks[date].to_csv(tscodes[i]+'.csv')
         break
 
 def save_all_stock_tick_update(pro):
@@ -29,16 +29,16 @@ def save_all_stock_tick_update(pro):
     global begin_date
     today=strtime_today()
     date_ranges=strtime_by_range(begin_date, today)
-    codes=sk.get_codes(pro)
-    for i in range(len(codes)):
+    tscodes=sk.get_tscodes(pro)
+    for i in range(len(tscodes)):
         for j in range(len(date_ranges)):
             date = date_ranges[j]
-            save_path=get_path(date, codes[i])
+            save_path=get_path(date, tscodes[i])
             if os.path.exists(save_path) == False:
-                name=re.findall(r"\d+",codes[i])[0]
+                name=re.findall(r"\d+",tscodes[i])[0]
                 tick=sk.get_tick_data(name, date)
                 if tick is not None: 
-                    print(date, codes[i])
+                    print(date, tscodes[i])
                     tick.to_csv(save_path)
 
 if __name__=='__main__':
