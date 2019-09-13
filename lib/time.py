@@ -15,3 +15,14 @@ def strtime_by_range(date_b, date_e):
         date=date.strftime("%Y-%m-%d")
         results.append(date)
     return results
+
+def strtime_convert(date):
+    begin=re.findall(r"\d+", date)
+    return str(int(begin[0])*10000+int(begin[1])*100+int(begin[2]))
+
+def strtime_delta_n_day(date_b, days):
+    begin=re.findall(r"\d+", date_b)
+    begin=datetime.date(int(begin[0]),int(begin[1]),int(begin[2]))
+    date = begin + datetime.timedelta(days=days)
+    date=date.strftime("%Y-%m-%d")
+    return date
