@@ -1,3 +1,4 @@
+#!/usr/local/python3/bin/python3
 import tushare as ts
 
 basic_datas=None
