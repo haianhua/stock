@@ -104,6 +104,27 @@ def get_since_year(year):
     year_df=df.loc[crit_year_1&crit_year_2, get_field]
     return year_df
 
+g_year_xjfh={}
+def load_xjfh(year):
+    year_df=get_since_year(year)
+    codes=year_df['代码'].tolist()
+    xjfhs=year_df['现金分红比例'].tolist()
+    moneys={}
+    for i in range(len(codes)):
+        code=codes[i]
+        if code not in moneys:
+            moneys[code]=0
+        if xjfhs[i] == '-': 
+            xjfhs[i]=0
+        moneys[code] = moneys[code]+float(xjfhs[i])
+    g_year_xjfh[year]=moneys
+
+def get_xjfh(year, code):
+    global g_year_xjfh
+    if g_year_xjfh[year] is None
+        load_xjfh(year)
+    return g_year_xjfh[year][code]
+
 #股息率
 def sort_by_GXL(year=2019):
     year_df=get_since_year(year)
@@ -111,6 +132,30 @@ def sort_by_GXL(year=2019):
     #print(sort_df)
     sort_df.to_csv('./fenhong-data/'+str(year)+'_sort_by_gxl.csv')
     return sort_df
+
+def compare_today_2():
+    sort_df=sort_by_GXL(year=2018)
+    codes=sort_df['代码'].tolist()
+    xjfhs=sort_df['现金分红比例'].tolist()
+    moneys={}
+    for i in range(len(codes)):
+        code=codes[i]
+        if code not in moneys:
+            moneys[code]=0
+        if xjfhs[i] == '-': 
+            xjfhs[i]=0
+        moneys[code] = moneys[code]+float(xjfhs[i])
+
+    gxl=[]
+    for i in range(len(codes)):
+        code=codes[i]
+        now_price=get_price(code, '20190830')['close']*10
+        gxl.append(moneys[code]/now_price)
+        print(code, moneys[code]/now_price)
+    df=pd.DataFrame.from_dict({'codes':codes, 'gxl':gxl})
+    sort_df=df.sort_values(by='gxl', ascending=False)
+    sort_df.to_csv('./fenhong-data/now_sort_by_gxl.csv')
+
 
 def compare_today():
     sort_df=sort_by_GXL(year=2018)
@@ -136,4 +181,4 @@ if __name__ == "__main__":
     #sort_by_GXL(2016)
     #sort_by_GXL(2015)
     #sort_by_GXL(2014)
-    compare_today()
+    compare_today_2()

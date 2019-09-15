@@ -10,6 +10,7 @@ import time
 sys.path.append("..")
 sys.path.append("../..")
 from lib.time import (strtime_convert, strtime_delta_n_day)
+from fenhongdata.fenhong_mgr import (get_xjfh)
 
 basic_datas=None
 #names
@@ -33,14 +34,22 @@ def download():
 
 def gen_df(diff_list):
     key_list=list(diff_list[0].keys())
+    key_list.append('gxl')
     values_dict={}
     for i in range(len(diff_list)):
         for j in range(len(key_list)):
             key=key_list[j]
             if key not in values_dict:
                 values_dict[key]=[]
+            value=0
+            if key=='gxl':
+                xjfh=get_xjfh(2019,diff_list[i]['f12'])
+                value=xjfh/diff_list[i]['f2']
+            else: 
+                value=diff_list[i][key]
             array=values_dict[key]
-            array.append(diff_list[i][key])
+            array.append(value)
+
     df=pd.DataFrame.from_dict(values_dict)
     return df
 
@@ -58,7 +67,8 @@ def convert_for_read(diff_list):
     'f16':'今日最低价',
     'f15':'今日最高价',
     'f14':'名字',
-    'f12':'代号',
+    #'f12':'代号',
+    'f12':'f12',
     'f10':'量比',
     'f9':'市盈(动)',
     'f8':'换手',
@@ -67,7 +77,8 @@ def convert_for_read(diff_list):
     'f5':'成交量',
     'f4':'价格变动',
     'f3':'今日涨幅',
-    'f2':'收盘价',
+    #'f2':'收盘价',
+    'f2':'f2',
     'f1':'f1',
     'f11':'f11',
     'f13':'f13',
