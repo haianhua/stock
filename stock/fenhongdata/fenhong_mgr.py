@@ -9,6 +9,9 @@ import time
 sys.path.append("..")
 sys.path.append("../..")
 from lib.time import (strtime_convert, strtime_delta_n_day)
+from hdailydata.hdaily_mgr import (get_price)
+import os
+import numpy as np
 
 g_page_count=10
 
@@ -32,7 +35,7 @@ def download(page, html):
     data_str=data_str.replace('SGBL', '送股比例')
     data_str=data_str.replace('ZGBL', '转股比例')
     data_str=data_str.replace('XJFH', '现金分红比例')
-    data_str=data_str.replace('GXL', '股息率(%)')
+    data_str=data_str.replace('GXL', '股息率')
     data_str=data_str.replace('YAGGR', '预案公告日')
     #data_str=data_str.replace('YAGGRHSRZF', '')
     #data_str=data_str.replace('GQDJRQSRZF', '')
@@ -50,7 +53,8 @@ def download(page, html):
     data_str=data_str.replace('ResultsbyDate', '业绩披露日期')
     data_str=data_str.replace('ProjectProgress', '方案进度')
     data_str=data_str.replace('AllocationPlan', '分配计划')
-    data_str=data_str.replace('NoticeDate', '最新公告日期')
+    #data_str=data_str.replace('NOTICEDATE', '最新公告日期')
+    
 
     data_list = json.loads(data_str)
     seria_data={}
@@ -61,10 +65,26 @@ def download(page, html):
             if key not in seria_data:
                 seria_data[key]=[]
             array=seria_data[key]
+            if key=='预案公告日':
+                year=19910101
+                if len(re.findall(r"\d+", data_list[i][key]))==0:
+                    year=19910101
+                else:
+                    t=re.findall(r"\d+", data_list[i][key])
+                    year=int(t[0])*10000+int(t[1])*100+int(t[2])
+                data_list[i][key]=year
+            if key=='代码':
+                if data_list[i]['市场']=='沪市':
+                    data_list[i][key]=str(data_list[i][key])+'.SH'
+                else:
+                    data_list[i][key]=str(data_list[i][key])+'.SZ'
             array.append(data_list[i][key])
 
-    data_pd=pd.DataFrame.from_dict(seria_data)
-    data_pd.to_csv('./fenhong-data/'+str(page)+'fenhong.csv')
+    df=pd.DataFrame.from_dict(seria_data)
+    if page==1:
+        df.to_csv('./fenhong-data/fenhong.csv')
+    else:
+        df.to_csv('./fenhong-data/fenhong.csv', mode='a', header=None)
 
 def download_all_page():
     global g_page_count
@@ -74,5 +94,46 @@ def download_all_page():
         download(page,html)
         #time.sleep(2)
 
+def get_since_year(year):
+    if os.path.exists('./fenhong-data/fenhong.csv') == False:
+        download_all_page()
+    df=pd.read_csv('./fenhong-data/fenhong.csv')
+    crit_year_1=df['预案公告日']>= year*10000
+    crit_year_2=df['预案公告日']<= year*10000+12*100+29
+    get_field=['代码','名称','股息率','送转总比例','送股比例','转股比例','现金分红比例','预案公告日','市场']
+    year_df=df.loc[crit_year_1&crit_year_2, get_field]
+    return year_df
+
+#股息率
+def sort_by_GXL(year=2019):
+    year_df=get_since_year(year)
+    sort_df=year_df.sort_values(by='股息率', ascending=False)
+    #print(sort_df)
+    sort_df.to_csv('./fenhong-data/'+str(year)+'_sort_by_gxl.csv')
+    return sort_df
+
+def compare_today():
+    sort_df=sort_by_GXL(year=2018)
+    codes=sort_df['代码'].tolist()
+    markets=sort_df['市场'].tolist()
+    dates=sort_df['预案公告日'].tolist()
+    for i in range(len(codes)):
+        code=codes[i]
+        h=get_price(code,dates[i])['close']
+        date_h=get_price(code,dates[i])['date']
+        n=get_price(code,'20190830')['close']
+        date_n=get_price(code,'20190830')['date']
+        print(code, date_h, h, date_n, n)
+        if i == 50:
+            break
+
+
 if __name__ == "__main__":
-    download_all_page()
+    #download_all_page()
+    #sort_by_GXL(2019)
+    #sort_by_GXL(2018)
+    #sort_by_GXL(2017)
+    #sort_by_GXL(2016)
+    #sort_by_GXL(2015)
+    #sort_by_GXL(2014)
+    compare_today()
