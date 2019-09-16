@@ -13,6 +13,7 @@ from hdailydata.hdaily_mgr import (get_price)
 import os
 import numpy as np
 
+root='/home/worker/stock/stock/'
 g_page_count=10
 
 #原始网页:http://data.eastmoney.com/yjfp/
@@ -81,10 +82,11 @@ def download(page, html):
             array.append(data_list[i][key])
 
     df=pd.DataFrame.from_dict(seria_data)
+    global root
     if page==1:
-        df.to_csv('./fenhong-data/fenhong.csv')
+        df.to_csv(root+'fenhongdata/fenhong-data/fenhong.csv')
     else:
-        df.to_csv('./fenhong-data/fenhong.csv', mode='a', header=None)
+        df.to_csv(root+'fenhongdata/fenhong-data/fenhong.csv', mode='a', header=None)
 
 def download_all_page():
     global g_page_count
@@ -95,9 +97,10 @@ def download_all_page():
         #time.sleep(2)
 
 def get_since_year(year):
-    if os.path.exists('./fenhong-data/fenhong.csv') == False:
+    global root
+    if os.path.exists(root+'fenhongdata/fenhong-data/fenhong.csv') == False:
         download_all_page()
-    df=pd.read_csv('./fenhong-data/fenhong.csv')
+    df=pd.read_csv(root+'fenhongdata/fenhong-data/fenhong.csv')
     crit_year_1=df['预案公告日']>= year*10000
     crit_year_2=df['预案公告日']<= year*10000+12*100+29
     get_field=['代码','名称','股息率','送转总比例','送股比例','转股比例','现金分红比例','预案公告日','市场']
@@ -121,16 +124,19 @@ def load_xjfh(year):
 
 def get_xjfh(year, code):
     global g_year_xjfh
-    if g_year_xjfh[year] is None
+    if year not in g_year_xjfh:
         load_xjfh(year)
+    if code not in g_year_xjfh[year]:
+        return 0
     return g_year_xjfh[year][code]
 
 #股息率
 def sort_by_GXL(year=2019):
+    global root
     year_df=get_since_year(year)
     sort_df=year_df.sort_values(by='股息率', ascending=False)
     #print(sort_df)
-    sort_df.to_csv('./fenhong-data/'+str(year)+'_sort_by_gxl.csv')
+    sort_df.to_csv(root+'fenhongdata/fenhong-data/'+str(year)+'_sort_by_gxl.csv')
     return sort_df
 
 def compare_today_2():
@@ -154,7 +160,8 @@ def compare_today_2():
         print(code, moneys[code]/now_price)
     df=pd.DataFrame.from_dict({'codes':codes, 'gxl':gxl})
     sort_df=df.sort_values(by='gxl', ascending=False)
-    sort_df.to_csv('./fenhong-data/now_sort_by_gxl.csv')
+    global root
+    sort_df.to_csv(root+'fenhongdata/fenhong-data/now_sort_by_gxl.csv')
 
 
 def compare_today():
