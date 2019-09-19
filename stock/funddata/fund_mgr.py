@@ -27,6 +27,33 @@ g_page_count=10
 def get_url():
     return 'http://fund.eastmoney.com/data/FundGuideapi.aspx?dt=0&sd=&ed=&sc=z&st=desc&pi=1&pn=8000&zf=diy&sh=list&rnd=0.7802489924781851'
 
+def get_allfund():
+    html=get_url()
+    content=requests.get(html).text
+    #print(content)
+    b=content.find('{')
+    data_str=content[b:]
+    data_list = json.loads(data_str)
+    print(len(data_list['datas']))
+    print(data_list['datas'][0])
+    id_name={
+        0:'代号',
+        1:'名字',
+        3:'类型',
+        4:'今年来',
+        5:'近1周',
+        6:'近1月',
+        7:'近3月',
+        8:'近6月',
+        9:'近1年',
+        10:'近2年',
+        11:'近3年',
+        15:'时间',
+    }
+    for data in len(data_list['datas']):
+        print(list(map(str, data_list['datas'][1].split(','))))
+
+
 def parse_fundstock(fundcode):
     id_name={
         1:'代号',
@@ -64,7 +91,8 @@ def download():
     print(len(data_list['datas']))
     print(data_list['datas'][0])
     print(list(map(str, data_list['datas'][1].split(','))))
+
 if __name__ == "__main__":
     #download()
     parse_fundstock(161213)
-
+    get_allfund()
