@@ -27,6 +27,33 @@ g_page_count=10
 def get_url():
     return 'http://fund.eastmoney.com/data/FundGuideapi.aspx?dt=0&sd=&ed=&sc=z&st=desc&pi=1&pn=8000&zf=diy&sh=list&rnd=0.7802489924781851'
 
+def parse_fundstock(fundcode):
+    id_name={
+        1:'代号',
+        2:'名字',
+        6:'占净值比例',
+        7:'持股数(万股)',
+        8:'持仓市值(万元)'
+    }
+    name_value={
+        '代号':[],
+        '名字':[],
+        '占净值比例':[],
+        '持股数(万股)':[],
+        '持仓市值(万元)':[]
+    }
+    content=requests.get('http://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code='+str(fundcode)+'&topline=10&year=&month=6&rt=0.3279408627843189').text
+    soup=BeautifulSoup(content,"html.parser")
+    tr2=soup.tbody.contents
+    for child in soup.tbody.children:
+        for i in range(len(child.contents)):
+            if i in id_name:
+                name=id_name[i]
+                value=child.contents[i].string
+                name_value[name].append(value)
+    df=pd.DataFrame.from_dict(name_value)
+    df.to_csv(root+'funddata/fund-data/'+str(fundcode)+'_stocks.csv')
+
 def download():
     html=get_url()
     content=requests.get(html).text
@@ -39,8 +66,5 @@ def download():
     print(list(map(str, data_list['datas'][1].split(','))))
 if __name__ == "__main__":
     #download()
+    parse_fundstock(161213)
 
-    content=requests.get('http://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=161213&topline=10&year=&month=6&rt=0.3279408627843189').text
-    soup=BeautifulSoup(content,"html.parser")
-    s=soup.prettify()
-    print(s)
